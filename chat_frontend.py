@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 
 # Set page config for better mobile display
 st.set_page_config(page_title="Chat App", layout="wide")
@@ -49,10 +48,12 @@ for msg in st.session_state.messages:
                     f"<div style='background-color: #E4E6EB; padding: 10px; border-radius: 10px; max-width: 70%; color: black;'>{msg['content']}</div>"
                     "</div>", unsafe_allow_html=True)
 
-# Chat input
-user_input = st.text_input("Type a message...")
+# Use a form to handle user input and immediately react to first input
+with st.form(key="chat_form"):
+    user_input = st.text_input("Type a message...")
+    submit_button = st.form_submit_button("Send")
 
-if user_input:
+if submit_button and user_input:
     # Store user message
     st.session_state.messages.append({"role": "user", "content": user_input})
 
