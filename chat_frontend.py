@@ -10,9 +10,18 @@ if "messages" not in st.session_state:
 # Title
 st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
 
-# Display chat messages without labels (like ChatGPT)
+# Display chat messages with different alignments for user and bot
 for msg in st.session_state.messages:
-    st.markdown(f"<div style='padding: 10px; border-radius: 5px; margin-bottom: 10px; background-color: #f1f1f1;'>{msg['content']}</div>", unsafe_allow_html=True)
+    if msg["role"] == "user":
+        # Align user messages to the right
+        st.markdown(f"<div style='display: flex; justify-content: flex-end; padding: 10px; margin-bottom: 10px;'>"
+                    f"<div style='background-color: #DCF8C6; padding: 10px; border-radius: 10px; max-width: 70%;'>{msg['content']}</div>"
+                    "</div>", unsafe_allow_html=True)
+    else:
+        # Align assistant messages to the left
+        st.markdown(f"<div style='display: flex; justify-content: flex-start; padding: 10px; margin-bottom: 10px;'>"
+                    f"<div style='background-color: #E4E6EB; padding: 10px; border-radius: 10px; max-width: 70%;'>{msg['content']}</div>"
+                    "</div>", unsafe_allow_html=True)
 
 # Chat input
 user_input = st.chat_input("Type a message...")
