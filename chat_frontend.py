@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 
 # Set page config for better mobile display
 st.set_page_config(page_title="Chat App", layout="wide")
@@ -107,4 +108,6 @@ if user_input:
         st.session_state.conversations.append(st.session_state.messages.copy())
         st.session_state.is_new_chat = False  # Mark that this chat is now complete
 
-    # Do not call rerun here as it causes issues with reloading old conversations
+    # Wait a moment to allow the UI to update
+    time.sleep(0.1)
+    st.experimental_rerun()  # Force the UI to update after the first message is added
