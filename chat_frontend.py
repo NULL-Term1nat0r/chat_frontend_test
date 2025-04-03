@@ -23,7 +23,7 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # Simulate bot response (Replace this with real AI response if needed)
-    bot_response = f"🤖: You said '{user_input}'"
+    bot_response = f": You said '{user_input}'"
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
     # Display the new messages without forcing a rerun
