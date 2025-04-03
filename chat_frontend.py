@@ -13,7 +13,7 @@ if "conversations" not in st.session_state:
     st.session_state.conversations = []
 
 # New chat button - placed above conversation buttons
-if st.button("New Chat"):
+if st.button("New Chat", key="new_chat_main"):
     st.session_state.messages = []  # Clear current chat
     st.session_state.is_new_chat = True  # Mark as a new chat session
     st.session_state.messages.append({"role": "assistant", "content": "Hello! How can I assist you today?"})  # Welcome message
@@ -68,12 +68,12 @@ st.markdown('<button id="open-sidebar-btn" onclick="window.open(\'#\', \'_self\'
 with st.sidebar:
     st.header("Previous Conversations")
     # Button for new conversation will appear at the top
-    if st.button("New Chat"):
+    if st.button("New Chat", key="new_chat_sidebar"):
         st.session_state.messages = []  # Reset current chat
         st.session_state.is_new_chat = True  # Start a new chat
 
     for i, conversation in enumerate(st.session_state.conversations):
-        if st.button(f"Conversation {i+1}"):
+        if st.button(f"Conversation {i+1}", key=f"conversation_{i+1}"):
             # Display the selected conversation
             st.session_state.messages = conversation
             st.session_state.is_new_chat = False  # No new chat for this conversation
