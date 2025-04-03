@@ -77,7 +77,6 @@ with st.sidebar:
             # Display the selected conversation
             st.session_state.messages = conversation
             st.session_state.is_new_chat = False  # No new chat for this conversation
-            st.experimental_rerun()
 
 # Display chat messages with different alignments for user and bot
 for msg in st.session_state.messages:
@@ -108,5 +107,4 @@ if user_input:
         st.session_state.conversations.append(st.session_state.messages.copy())
         st.session_state.is_new_chat = False  # Mark that this chat is now complete
 
-    # Display the new messages without forcing a rerun
-    st.rerun()
+    # Do not call rerun here as it causes issues with reloading old conversations
