@@ -22,49 +22,6 @@ if st.button("New Chat", key="new_chat_main"):
 # Title
 st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
 
-# Add custom CSS and JavaScript to handle scroll and button positioning
-st.markdown("""
-    <style>
-        /* Position the button on the top left */
-        #open-sidebar-btn {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 10;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: none;
-        }
-
-        /* Hide the button when scrolling */
-        #open-sidebar-btn.hidden {
-            display: none;
-        }
-
-        .chat-container {
-            margin-top: 50px; /* Make room for the button */
-        }
-    </style>
-    <script>
-        // Hide the button when scrolling
-        const btn = document.getElementById("open-sidebar-btn");
-        window.addEventListener("scroll", () => {
-            if (window.scrollY > 50) {  // Hide after 50px scroll
-                btn.classList.add("hidden");
-            } else {
-                btn.classList.remove("hidden");
-            }
-        });
-    </script>
-""", unsafe_allow_html=True)
-
-# Display the button with Streamlit's button and position it via custom CSS
-st.markdown('<button id="open-sidebar-btn" onclick="window.open(\'#\', \'_self\');">View Previous Conversations</button>', unsafe_allow_html=True)
-
 # Sidebar for previous conversations
 with st.sidebar:
     st.header("Previous Conversations")
@@ -93,7 +50,7 @@ for msg in st.session_state.messages:
                     "</div>", unsafe_allow_html=True)
 
 # Chat input
-user_input = st.chat_input("Type a message...")
+user_input = st.text_input("Type a message...")
 
 if user_input:
     # Store user message
@@ -107,7 +64,3 @@ if user_input:
     if st.session_state.is_new_chat:
         st.session_state.conversations.append(st.session_state.messages.copy())
         st.session_state.is_new_chat = False  # Mark that this chat is now complete
-
-    # Wait a moment to allow the UI to update
-    time.sleep(0.1)
-    st.experimental_rerun()  # Force the UI to update after the first message is added
