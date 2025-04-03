@@ -14,17 +14,48 @@ if "conversations" not in st.session_state:
 # Title
 st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
 
+# Add custom CSS and JavaScript to handle scroll and button positioning
+st.markdown("""
+    <style>
+        /* Position the button on the top left */
+        #open-sidebar-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Hide the button when scrolling */
+        #open-sidebar-btn.hidden {
+            display: none;
+        }
+
+        .chat-container {
+            margin-top: 50px; /* Make room for the button */
+        }
+    </style>
+    <script>
+        // Hide the button when scrolling
+        const btn = document.getElementById("open-sidebar-btn");
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 50) {  // Hide after 50px scroll
+                btn.classList.add("hidden");
+            } else {
+                btn.classList.remove("hidden");
+            }
+        });
+    </script>
+""", unsafe_allow_html=True)
+
 # Button to open the sidebar for previous conversations
-if st.button('View Previous Conversations'):
-    # Expand the sidebar (it will automatically appear on mobile when using Streamlit's sidebar)
-    with st.sidebar:
-        st.header("Previous Conversations")
-        # Display previous conversations with clickable links
-        for i, conversation in enumerate(st.session_state.conversations):
-            if st.button(f"Conversation {i+1}"):
-                # Display the selected conversation
-                st.session_state.messages = conversation
-                st.experimental_rerun()
+st.markdown('<button id="open-sidebar-btn">View Previous Conversations</button>', unsafe_allow_html=True)
 
 # Display chat messages with different alignments for user and bot
 for msg in st.session_state.messages:
