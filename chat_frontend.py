@@ -6,6 +6,7 @@ st.set_page_config(page_title="Chat App", layout="wide")
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
+    st.session_state.is_new_chat = True  # Track whether a new chat is ongoing
 
 # Initialize previous conversations
 if "conversations" not in st.session_state:
@@ -14,6 +15,7 @@ if "conversations" not in st.session_state:
 # New chat button - placed above conversation buttons
 if st.button("New Chat"):
     st.session_state.messages = []  # Clear current chat
+    st.session_state.is_new_chat = True  # Mark as a new chat session
     st.session_state.messages.append({"role": "assistant", "content": "Hello! How can I assist you today?"})  # Welcome message
 
 # Title
@@ -68,11 +70,13 @@ with st.sidebar:
     # Button for new conversation will appear at the top
     if st.button("New Chat"):
         st.session_state.messages = []  # Reset current chat
+        st.session_state.is_new_chat = True  # Start a new chat
 
     for i, conversation in enumerate(st.session_state.conversations):
         if st.button(f"Conversation {i+1}"):
             # Display the selected conversation
             st.session_state.messages = conversation
+            st.session_state.is_new_chat = False  # No new chat for this conversation
             st.experimental_rerun()
 
 # Display chat messages with different alignments for user and bot
@@ -99,8 +103,10 @@ if user_input:
     bot_response = f"You said '{user_input}'"
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
-    # Save the current conversation to history
-    st.session_state.conversations.append(st.session_state.messages.copy())
+    # Only save the conversation when it's a new chat, not on every message
+    if st.session_state.is_new_chat:
+        st.session_state.conversations.append(st.session_state.messages.copy())
+        st.session_state.is_new_chat = False  # Mark that this chat is now complete
 
     # Display the new messages without forcing a rerun
     st.rerun()
