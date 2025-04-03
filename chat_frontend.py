@@ -10,14 +10,9 @@ if "messages" not in st.session_state:
 # Title
 st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
 
-# Display chat messages manually without icons
+# Display chat messages without labels (like ChatGPT)
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        # Display user messages without any icon
-        st.markdown(f"**User**: {msg['content']}")
-    else:
-        # Display assistant (bot) messages without any icon
-        st.markdown(f"**Assistant**: {msg['content']}")
+    st.markdown(f"<div style='padding: 10px; border-radius: 5px; margin-bottom: 10px; background-color: #f1f1f1;'>{msg['content']}</div>", unsafe_allow_html=True)
 
 # Chat input
 user_input = st.chat_input("Type a message...")
