@@ -49,16 +49,34 @@ for msg in st.session_state.messages:
                     "</div>", unsafe_allow_html=True)
 
 # Use a form to handle user input and immediately react to first input
-with st.form(key="chat_form"):
-    user_input = st.text_input("Type a message...")
-    submit_button = st.form_submit_button("Send")
+with st.form(key="chat_form", clear_on_submit=True):
+    user_input = st.text_input("Type a message...", key="user_input", max_chars=200, placeholder="Type here... Press Enter to send")
+    submit_button = st.form_submit_button(label="Send", use_container_width=True)
 
+# Move input to the bottom and fix position with CSS
+st.markdown("""
+    <style>
+        .stTextInput {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 10;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Handle form submission
 if submit_button and user_input:
     # Store user message
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # Simulate bot response (Replace this with real AI response if needed)
-    bot_response = f"You said '{user_input}'"
+    bot_response = f"You said: {user_input}"
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
     # Only save the conversation when it's a new chat, not on every message
