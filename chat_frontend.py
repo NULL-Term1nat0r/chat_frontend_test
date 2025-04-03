@@ -1,15 +1,20 @@
 import streamlit as st
 
-# Set page config for better mobile display (must be the first command)
+# Set page config for better mobile display
 st.set_page_config(page_title="Chat App", layout="wide")
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Initialize previous conversations (you can replace this with a persistent storage mechanism)
+# Initialize previous conversations
 if "conversations" not in st.session_state:
     st.session_state.conversations = []
+
+# New chat button - placed above conversation buttons
+if st.button("New Chat"):
+    st.session_state.messages = []  # Clear current chat
+    st.session_state.messages.append({"role": "assistant", "content": "Hello! How can I assist you today?"})  # Welcome message
 
 # Title
 st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
@@ -60,6 +65,10 @@ st.markdown('<button id="open-sidebar-btn" onclick="window.open(\'#\', \'_self\'
 # Sidebar for previous conversations
 with st.sidebar:
     st.header("Previous Conversations")
+    # Button for new conversation will appear at the top
+    if st.button("New Chat"):
+        st.session_state.messages = []  # Reset current chat
+
     for i, conversation in enumerate(st.session_state.conversations):
         if st.button(f"Conversation {i+1}"):
             # Display the selected conversation
