@@ -53,23 +53,6 @@ with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input("Type a message...", key="user_input", max_chars=200, placeholder="Type here... Press Enter to send")
     submit_button = st.form_submit_button(label="Send", use_container_width=True)
 
-# Move input to the bottom and fix position with CSS
-st.markdown("""
-    <style>
-        .stTextInput {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 10;
-            background-color: white;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 # Handle form submission
 if submit_button and user_input:
     # Store user message
@@ -83,3 +66,20 @@ if submit_button and user_input:
     if st.session_state.is_new_chat:
         st.session_state.conversations.append(st.session_state.messages.copy())
         st.session_state.is_new_chat = False  # Mark that this chat is now complete
+
+# CSS to keep the input fixed at the bottom of the page
+st.markdown("""
+    <style>
+        .stTextInput {
+            position: fixed;
+            bottom: 10px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+""", unsafe_allow_html=True)
