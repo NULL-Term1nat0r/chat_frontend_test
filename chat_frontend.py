@@ -1,8 +1,6 @@
 import streamlit as st
-from streamlit_chat import message
-import os
-import json
 from datetime import datetime
+import json
 
 # Set page configuration
 st.set_page_config(
@@ -38,16 +36,19 @@ st.markdown("""
     }
     
     /* Chat message styling */
-    .user-message {
-        margin-left: auto;
-        margin-right: 0;
+    .stChatMessage {
         max-width: 80%;
     }
     
-    .bot-message {
+    .user-message .stChatMessage {
+        margin-left: auto;
+        margin-right: 0;
+    }
+    
+    .bot-message .stChatMessage {
         margin-right: auto;
         margin-left: 0;
-        max-width: 80%;
+        background-color: #e6f7ff;
     }
     
     /* Mobile responsiveness */
@@ -182,9 +183,15 @@ def main():
     # Display current chat messages
     for msg in st.session_state['current_chat']:
         if msg['is_user']:
-            message(msg['content'], is_user=True, key=f"user_{msg['id']}")
+            with st.container():
+                st.markdown('<div class="user-message">', unsafe_allow_html=True)
+                st.chat_message("user").write(msg['content'])
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
-            message(msg['content'], is_user=False, key=f"bot_{msg['id']}")
+            with st.container():
+                st.markdown('<div class="bot-message">', unsafe_allow_html=True)
+                st.chat_message("assistant").write(msg['content'])
+                st.markdown('</div>', unsafe_allow_html=True)
     
     # Input area at bottom
     with st.container():
