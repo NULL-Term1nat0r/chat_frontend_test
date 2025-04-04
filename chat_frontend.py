@@ -1,85 +1,253 @@
 import streamlit as st
+from streamlit_chat import message
+import os
+import json
+from datetime import datetime
 
-# Set page config for better mobile display
-st.set_page_config(page_title="Chat App", layout="wide")
+# Set page configuration
+st.set_page_config(
+    page_title="Chat App",
+    page_icon="💬",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-    st.session_state.is_new_chat = True  # Track whether a new chat is ongoing
-
-# Initialize previous conversations
-if "conversations" not in st.session_state:
-    st.session_state.conversations = []
-
-# New chat button - placed above conversation buttons
-if st.button("New Chat", key="new_chat_main"):
-    st.session_state.messages = []  # Clear current chat
-    st.session_state.is_new_chat = True  # Mark as a new chat session
-    st.session_state.messages.append({"role": "assistant", "content": "Hello! How can I assist you today?"})  # Welcome message
-
-# Title
-st.markdown("<h1 style='text-align: center;'>Simple Chat</h1>", unsafe_allow_html=True)
-
-# Sidebar for previous conversations
-with st.sidebar:
-    st.header("Previous Conversations")
-    # Button for new conversation will appear at the top
-    if st.button("New Chat", key="new_chat_sidebar"):
-        st.session_state.messages = []  # Reset current chat
-        st.session_state.is_new_chat = True  # Start a new chat
-
-    for i, conversation in enumerate(st.session_state.conversations):
-        if st.button(f"Conversation {i+1}", key=f"conversation_{i+1}"):
-            # Display the selected conversation
-            st.session_state.messages = conversation
-            st.session_state.is_new_chat = False  # No new chat for this conversation
-
-# Display chat messages with different alignments for user and bot
-for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        # Align user messages to the right
-        st.markdown(f"<div style='display: flex; justify-content: flex-end; padding: 10px; margin-bottom: 10px;'>"
-                    f"<div style='background-color: #DCF8C6; padding: 10px; border-radius: 10px; max-width: 70%; color: black;'>{msg['content']}</div>"
-                    "</div>", unsafe_allow_html=True)
-    else:
-        # Align assistant messages to the left
-        st.markdown(f"<div style='display: flex; justify-content: flex-start; padding: 10px; margin-bottom: 10px;'>"
-                    f"<div style='background-color: #E4E6EB; padding: 10px; border-radius: 10px; max-width: 70%; color: black;'>{msg['content']}</div>"
-                    "</div>", unsafe_allow_html=True)
-
-# Use a form to handle user input and immediately react to first input
-with st.form(key="chat_form", clear_on_submit=True):
-    user_input = st.text_input("Type a message...", key="user_input", max_chars=200, placeholder="Type here... Press Enter to send")
-    submit_button = st.form_submit_button(label="Send", use_container_width=True)
-
-# Handle form submission
-if submit_button and user_input:
-    # Store user message
-    st.session_state.messages.append({"role": "user", "content": user_input})
-
-    # Simulate bot response (Replace this with real AI response if needed)
-    bot_response = f"You said: {user_input}"
-    st.session_state.messages.append({"role": "assistant", "content": bot_response})
-
-    # Only save the conversation when it's a new chat, not on every message
-    if st.session_state.is_new_chat:
-        st.session_state.conversations.append(st.session_state.messages.copy())
-        st.session_state.is_new_chat = False  # Mark that this chat is now complete
-
-# CSS to keep the input fixed at the bottom of the page
+# Custom CSS for responsive design
 st.markdown("""
-    <style>
-        .stTextInput {
-            position: fixed;
-            bottom: 10px;
-            left: 20px;
-            right: 20px;
-            z-index: 1000;
-            background-color: white;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            border-radius: 10px;
+<style>
+    /* Main chat container */
+    .main .block-container {
+        padding-bottom: 5rem;
+    }
+    
+    /* Input container at bottom */
+    .input-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 1rem;
+        z-index: 100;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Sidebar styling */
+    .sidebar .sidebar-content {
+        width: 300px;
+    }
+    
+    /* Chat message styling */
+    .user-message {
+        margin-left: auto;
+        margin-right: 0;
+        max-width: 80%;
+    }
+    
+    .bot-message {
+        margin-right: auto;
+        margin-left: 0;
+        max-width: 80%;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        .sidebar .sidebar-content {
+            width: 100%;
         }
-    </style>
+    }
+    
+    /* History item styling */
+    .history-item {
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .history-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .history-item.active {
+        background-color: #e0f7fa;
+    }
+    
+    /* Menu button styling */
+    .menu-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 101;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+</style>
 """, unsafe_allow_html=True)
+
+# Initialize session state
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+    
+if 'current_chat' not in st.session_state:
+    st.session_state['current_chat'] = []
+    
+if 'sidebar_open' not in st.session_state:
+    st.session_state['sidebar_open'] = False
+    
+if 'new_chat_id' not in st.session_state:
+    st.session_state['new_chat_id'] = 0
+
+# Function to save chat history
+def save_chat_history():
+    if st.session_state['current_chat']:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        chat_title = f"Chat {len(st.session_state['history']) + 1} - {timestamp}"
+        st.session_state['history'].insert(0, {
+            'id': st.session_state['new_chat_id'],
+            'title': chat_title,
+            'messages': st.session_state['current_chat'].copy()
+        })
+        st.session_state['new_chat_id'] += 1
+        st.session_state['current_chat'] = []
+
+# Function to load a chat from history
+def load_chat(chat_id):
+    for chat in st.session_state['history']:
+        if chat['id'] == chat_id:
+            st.session_state['current_chat'] = chat['messages'].copy()
+            break
+
+# Function to start a new chat
+def new_chat():
+    save_chat_history()
+    st.session_state['current_chat'] = []
+
+# Toggle sidebar
+def toggle_sidebar():
+    st.session_state['sidebar_open'] = not st.session_state['sidebar_open']
+
+# Main app layout
+def main():
+    # Menu button to toggle sidebar
+    st.markdown("""
+    <button class="menu-button" onclick="parent.document.querySelector('.sidebar .sidebar-content').style.display = 'block';">
+        ☰
+    </button>
+    """, unsafe_allow_html=True)
+    
+    # Sidebar with chat history
+    with st.sidebar:
+        st.title("Chat History")
+        
+        # Button to start new chat
+        if st.button("➕ New Chat", use_container_width=True):
+            new_chat()
+            st.session_state['sidebar_open'] = False
+            st.rerun()
+        
+        # Display chat history
+        st.write("---")
+        for chat in st.session_state['history']:
+            is_active = any(msg['id'] == chat['id'] for msg in st.session_state['current_chat']) if st.session_state['current_chat'] else False
+            item_class = "history-item active" if is_active else "history-item"
+            st.markdown(f"""
+            <div class="{item_class}" onclick="loadChat({chat['id']})">
+                {chat['title']}
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Hide sidebar initially if not open
+    if not st.session_state['sidebar_open']:
+        st.markdown("""
+        <style>
+            .sidebar .sidebar-content {
+                display: none;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    # Main chat area
+    st.title("Chat")
+    
+    # Display current chat messages
+    for msg in st.session_state['current_chat']:
+        if msg['is_user']:
+            message(msg['content'], is_user=True, key=f"user_{msg['id']}")
+        else:
+            message(msg['content'], is_user=False, key=f"bot_{msg['id']}")
+    
+    # Input area at bottom
+    with st.container():
+        st.markdown('<div class="input-container">', unsafe_allow_html=True)
+        
+        user_input = st.chat_input("Type your message here...", key="input")
+        
+        if user_input:
+            # Add user message to current chat
+            user_msg_id = len(st.session_state['current_chat'])
+            st.session_state['current_chat'].append({
+                'id': user_msg_id,
+                'content': user_input,
+                'is_user': True,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            # Simulate bot response
+            bot_response = f"I received your message: '{user_input}'"
+            st.session_state['current_chat'].append({
+                'id': user_msg_id + 1,
+                'content': bot_response,
+                'is_user': False,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            # Rerun to update the display
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # JavaScript to handle chat loading
+    st.markdown("""
+    <script>
+        function loadChat(chatId) {
+            const data = {chat_id: chatId};
+            fetch('/_stcore/handle_loaded_chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                }
+            });
+        }
+        
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = parent.document.querySelector('.sidebar .sidebar-content');
+            const menuButton = parent.document.querySelector('.menu-button');
+            
+            if (sidebar.style.display === 'block' && 
+                !sidebar.contains(event.target) && 
+                !menuButton.contains(event.target)) {
+                sidebar.style.display = 'none';
+            }
+        });
+    </script>
+    """, unsafe_allow_html=True)
+
+# Run the app
+if __name__ == "__main__":
+    main()
